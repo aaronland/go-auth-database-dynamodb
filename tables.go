@@ -1,7 +1,7 @@
 package dynamodb
 
 import (
-	"errors"
+	_ "errors"
 	"github.com/aws/aws-sdk-go/aws"
 	aws_dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 )
@@ -86,8 +86,6 @@ func CreateAccountsTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDa
 
 func CreateAccessTokensTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccessTokensDatabaseOptions) (bool, error) {
 
-	return false, errors.New("Please write me")
-
 	has_table, err := hasTable(client, opts.TableName)
 
 	if err != nil {
@@ -101,53 +99,53 @@ func CreateAccessTokensTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccess
 	req := &aws_dynamodb.CreateTableInput{
 		AttributeDefinitions: []*aws_dynamodb.AttributeDefinition{
 			{
-				AttributeName: aws.String("address"),
-				AttributeType: aws.String("S"),
-			},
-			{
-				AttributeName: aws.String("event"),
+				AttributeName: aws.String("id"),
 				AttributeType: aws.String("N"),
 			},
 			{
-				AttributeName: aws.String("created"),
+				AttributeName: aws.String("access_token"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("account_id"),
 				AttributeType: aws.String("N"),
 			},
 		},
 		KeySchema: []*aws_dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("address"),
+				AttributeName: aws.String("id"),
 				KeyType:       aws.String("HASH"),
-			},
-			{
-				AttributeName: aws.String("created"),
-				KeyType:       aws.String("RANGE"),
 			},
 		},
 		GlobalSecondaryIndexes: []*aws_dynamodb.GlobalSecondaryIndex{
 			{
-				IndexName: aws.String("address"),
+				IndexName: aws.String("access_token"),
 				KeySchema: []*aws_dynamodb.KeySchemaElement{
 					{
-						AttributeName: aws.String("address"),
+						AttributeName: aws.String("access_token"),
 						KeyType:       aws.String("HASH"),
 					},
 				},
 				Projection: &aws_dynamodb.Projection{
-					// maybe just address...?
-					ProjectionType: aws.String("ALL"),
+					ProjectionType: aws.String("INCLUDE"),
+					NonKeyAttributes: []*string{
+						aws.String("id"),
+					},
 				},
 			},
 			{
-				IndexName: aws.String("event"),
+				IndexName: aws.String("account_id"),
 				KeySchema: []*aws_dynamodb.KeySchemaElement{
 					{
-						AttributeName: aws.String("event"),
+						AttributeName: aws.String("account_id"),
 						KeyType:       aws.String("HASH"),
 					},
 				},
 				Projection: &aws_dynamodb.Projection{
-					// maybe just address...?
-					ProjectionType: aws.String("ALL"),
+					ProjectionType: aws.String("INCLUDE"),
+					NonKeyAttributes: []*string{
+						aws.String("id"),
+					},
 				},
 			},
 		},

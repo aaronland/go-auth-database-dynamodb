@@ -43,7 +43,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
- 
+
 	acct, err = accounts_db.UpdateAccount(acct)
 
 	if err != nil {
@@ -52,4 +52,3 @@ func main() {
 
 	log.Println("OK")
 }
-

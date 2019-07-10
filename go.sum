@@ -9,6 +9,8 @@ github.com/aaronland/go-auth v0.0.5 h1:B0Nh2OPs2P+LwTFfXgLrpgD7syCNgDdZCh5KcQKWT
 github.com/aaronland/go-auth v0.0.5/go.mod h1:8CxLJnSIIxiTo4CKVR+MkRd2T1NTrcO2gzAziD4SJuQ=
 github.com/aaronland/go-auth v0.0.6 h1:kc+11qZLQj9+AC/MV5tKREJVBLLYLMbFKqtMUZ95KR4=
 github.com/aaronland/go-auth v0.0.6/go.mod h1:8CxLJnSIIxiTo4CKVR+MkRd2T1NTrcO2gzAziD4SJuQ=
+github.com/aaronland/go-auth v0.0.8 h1:ylx2YcdqX8K3hYM+nHGXlxfV+6Gxloh77muf5VSzytg=
+github.com/aaronland/go-auth v0.0.8/go.mod h1:8CxLJnSIIxiTo4CKVR+MkRd2T1NTrcO2gzAziD4SJuQ=
 github.com/aaronland/go-aws-session v0.0.2 h1:MtJ0yRpq8Yxo8ZUMAC7DFow8v53pkMRWYiWztLhO/AQ=
 github.com/aaronland/go-aws-session v0.0.2/go.mod h1:nc4r+JFoGM6sop/lTspmUDcRIUW/V2NWs9Nd6jQWk90=
 github.com/aaronland/go-brooklynintegers-api v1.0.1 h1:HrEo98HD5YOfC/slzkROCxMuZTeCpT3srf1G+eO9sX8=

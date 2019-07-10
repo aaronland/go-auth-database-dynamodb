@@ -1,7 +1,7 @@
 package main
 
 import (
-       "context"
+	"context"
 	"flag"
 	"github.com/aaronland/go-auth-database-dynamodb"
 	"github.com/aaronland/go-auth/www"

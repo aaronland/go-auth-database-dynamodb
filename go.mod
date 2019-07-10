@@ -1,7 +1,7 @@
 module github.com/aaronland/go-auth-database-dynamodb
 
 require (
-	github.com/aaronland/go-auth v0.0.6
+	github.com/aaronland/go-auth v0.0.8
 	github.com/aaronland/go-aws-session v0.0.2
 	github.com/aaronland/go-password v0.0.2
 	github.com/aws/aws-sdk-go v1.20.7

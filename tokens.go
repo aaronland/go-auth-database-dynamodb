@@ -71,7 +71,7 @@ func NewDynamoDBAccessTokensDatabaseWithSession(sess *aws_session.Session, opts 
 	return &db, nil
 }
 
-func (db *DynamoDBAccessTokensDatabase) getTokenByID(id int64) (*token.Token, error) {
+func (db *DynamoDBAccessTokensDatabase) GetTokenByID(id int64) (*token.Token, error) {
 
 	str_id := strconv.FormatInt(id, 10)
 

@@ -25,17 +25,17 @@ func CreateAccountsTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDa
 				AttributeType: aws.String("N"),
 			},
 			{
-				AttributeName: aws.String("created"),
-				AttributeType: aws.String("N"),
+				AttributeName: aws.String("email"),
+				AttributeType: aws.String("S"),
+			},
+			{
+				AttributeName: aws.String("url"),
+				AttributeType: aws.String("S"),
 			},
 		},
 		KeySchema: []*aws_dynamodb.KeySchemaElement{
 			{
-				AttributeName: aws.String("email"),
-				KeyType:       aws.String("HASH"),
-			},
-			{
-				AttributeName: aws.String("url"),
+				AttributeName: aws.String("id"),
 				KeyType:       aws.String("HASH"),
 			},
 		},
@@ -47,14 +47,27 @@ func CreateAccountsTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDa
 						AttributeName: aws.String("email"),
 						KeyType:       aws.String("HASH"),
 					},
+				},
+				Projection: &aws_dynamodb.Projection{
+					ProjectionType: aws.String("INCLUDE"),
+					NonKeyAttributes: []*string{
+						aws.String("id"),
+					},
+				},
+			},
+			{
+				IndexName: aws.String("url"),
+				KeySchema: []*aws_dynamodb.KeySchemaElement{
 					{
 						AttributeName: aws.String("url"),
 						KeyType:       aws.String("HASH"),
 					},
 				},
 				Projection: &aws_dynamodb.Projection{
-					// maybe just address...?
-					ProjectionType: aws.String("ALL"),
+					ProjectionType: aws.String("INCLUDE"),
+					NonKeyAttributes: []*string{
+						aws.String("id"),
+					},
 				},
 			},
 		},

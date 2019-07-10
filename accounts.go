@@ -10,7 +10,7 @@ import (
 	aws_session "github.com/aws/aws-sdk-go/aws/session"
 	aws_dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	aws_dynamodbattribute "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	_ "log"
+	"log"
 	"strconv"
 	"time"
 )
@@ -21,6 +21,14 @@ type DynamoDBAccountsDatabaseOptions struct {
 	TableName   string
 	BillingMode string
 	CreateTable bool
+}
+
+type DynamoDBAccount struct {
+	ID      int64            `json:"id"`
+	Created int64            `json:"created"`
+	Email   string           `json:"email"`
+	URL     string           `json:"url"`
+	Account *account.Account `json:"account"`
 }
 
 func DefaultDynamoDBAccountsDatabaseOptions() *DynamoDBAccountsDatabaseOptions {
@@ -56,6 +64,7 @@ func NewDynamoDBAccountsDatabaseWithSession(sess *aws_session.Session, opts *Dyn
 	client := aws_dynamodb.New(sess)
 
 	if opts.CreateTable {
+
 		_, err := CreateAccountsTable(client, opts)
 
 		if err != nil {
@@ -78,7 +87,7 @@ func (db *DynamoDBAccountsDatabase) GetAccountByID(id int64) (*account.Account, 
 	req := &aws_dynamodb.GetItemInput{
 		TableName: aws.String(db.options.TableName),
 		Key: map[string]*aws_dynamodb.AttributeValue{
-			"address": {
+			"id": {
 				N: aws.String(str_id),
 			},
 		},
@@ -94,50 +103,71 @@ func (db *DynamoDBAccountsDatabase) GetAccountByID(id int64) (*account.Account, 
 }
 
 func (db *DynamoDBAccountsDatabase) GetAccountByEmailAddress(addr string) (*account.Account, error) {
-
-	req := &aws_dynamodb.GetItemInput{
-		TableName: aws.String(db.options.TableName),
-		Key: map[string]*aws_dynamodb.AttributeValue{
-			"address": {
-				S: aws.String(addr),
-			},
-		},
-	}
-
-	rsp, err := db.client.GetItem(req)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return itemToAccount(rsp.Item)
+	return db.getAccountByPointer("email", "email", addr)
 }
 
 func (db *DynamoDBAccountsDatabase) GetAccountByURL(url string) (*account.Account, error) {
+	return db.getAccountByPointer("url", "url", url)
+}
 
-	req := &aws_dynamodb.GetItemInput{
+func (db *DynamoDBAccountsDatabase) getAccountByPointer(idx string, key string, value string) (*account.Account, error) {
+
+	req := &aws_dynamodb.QueryInput{
 		TableName: aws.String(db.options.TableName),
-		Key: map[string]*aws_dynamodb.AttributeValue{
-			"url": {
-				S: aws.String(url),
+		KeyConditions: map[string]*aws_dynamodb.Condition{
+			key: {
+				ComparisonOperator: aws.String("EQ"),
+				AttributeValueList: []*aws_dynamodb.AttributeValue{
+					{
+						S: aws.String(value),
+					},
+				},
 			},
 		},
+		ProjectionExpression: aws.String("id"),
+		IndexName:            aws.String(idx),
 	}
 
-	rsp, err := db.client.GetItem(req)
+	// log.Println("GET", req)
+
+	rsp, err := db.client.Query(req)
 
 	if err != nil {
 		return nil, err
 	}
 
-	return itemToAccount(rsp.Item)
+	count_items := len(rsp.Items)
+
+	if count_items < 1 {
+		return nil, new(database.ErrNoAccount)
+	}
+
+	if count_items > 1 {
+		return nil, errors.New("Multiple results for key!")
+	}
+
+	rsp_id := rsp.Items[0]["id"]
+	str_id := *rsp_id.N
+
+	id, err := strconv.ParseInt(str_id, 10, 64)
+
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("GET BY ID FOR %s=%s (%d)\n", key, value, id)
+	return db.GetAccountByID(id)
 }
 
 func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.Account, error) {
 
-	existing_acct, err := db.GetAccountByEmailAddress("FIXME")
+	log.Println("ADD")
+
+	existing_acct, err := db.GetAccountByEmailAddress(acct.Address.URI)
 
 	if err != nil && !database.IsNotExist(err) {
+
+		log.Println("ERR 1")
 		return nil, err
 	}
 
@@ -145,9 +175,10 @@ func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.
 		return nil, errors.New("Account already exists")
 	}
 
-	existing_acct, err = db.GetAccountByURL("FIXME")
+	existing_acct, err = db.GetAccountByURL(acct.Username.Safe)
 
 	if err != nil && !database.IsNotExist(err) {
+		log.Println("ERR 1")
 		return nil, err
 	}
 
@@ -163,6 +194,7 @@ func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.
 
 	acct.ID = id
 
+	log.Println("PUT")
 	err = putAccount(db.client, db.options, acct)
 
 	if err != nil {
@@ -210,7 +242,11 @@ func (db *DynamoDBAccountsDatabase) UpdateAccount(acct *account.Account) (*accou
 
 func putAccount(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDatabaseOptions, acct *account.Account) error {
 
-	item, err := aws_dynamodbattribute.MarshalMap(acct)
+	dynamodb_acct := accountToDynamoDBAccount(acct)
+
+	log.Println("PUT", dynamodb_acct.ID, dynamodb_acct.Created)
+
+	item, err := aws_dynamodbattribute.MarshalMap(dynamodb_acct)
 
 	if err != nil {
 		return err
@@ -232,17 +268,36 @@ func putAccount(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDatabaseOpt
 
 func itemToAccount(item map[string]*aws_dynamodb.AttributeValue) (*account.Account, error) {
 
-	var acct *account.Account
+	var dynamodb_acct *DynamoDBAccount
 
-	err := aws_dynamodbattribute.UnmarshalMap(item, &acct)
+	err := aws_dynamodbattribute.UnmarshalMap(item, &dynamodb_acct)
 
 	if err != nil {
 		return nil, err
 	}
 
-	if acct.ID == 0 {
+	if dynamodb_acct.ID == 0 {
 		return nil, new(database.ErrNoAccount)
 	}
 
+	acct := dynamodbAccountToAccount(dynamodb_acct)
+
 	return acct, nil
+}
+
+func accountToDynamoDBAccount(acct *account.Account) *DynamoDBAccount {
+
+	dynamodb_acct := DynamoDBAccount{
+		ID:      acct.ID,
+		Created: acct.Created,
+		Email:   acct.Address.URI,
+		URL:     acct.Username.Safe,
+		Account: acct,
+	}
+
+	return &dynamodb_acct
+}
+
+func dynamodbAccountToAccount(dynamodb_acct *DynamoDBAccount) *account.Account {
+	return dynamodb_acct.Account
 }

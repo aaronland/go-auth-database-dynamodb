@@ -1,7 +1,7 @@
 package dynamodb
 
 import (
-       "errors"
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	aws_dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 )
@@ -73,7 +73,7 @@ func CreateAccountsTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDa
 
 func CreateAccessTokensTable(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccessTokensDatabaseOptions) (bool, error) {
 
-     return false, errors.New("Please write me")
+	return false, errors.New("Please write me")
 
 	has_table, err := hasTable(client, opts.TableName)
 

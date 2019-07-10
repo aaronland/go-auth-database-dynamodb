@@ -3,8 +3,8 @@ package dynamodb
 import (
 	_ "context"
 	_ "errors"
-	_ "github.com/aaronland/go-auth/token"
 	"github.com/aaronland/go-auth/database"
+	_ "github.com/aaronland/go-auth/token"
 	"github.com/aaronland/go-aws-session"
 	// aws "github.com/aws/aws-sdk-go/aws"
 	aws_session "github.com/aws/aws-sdk-go/aws/session"
@@ -36,8 +36,8 @@ func DefaultDynamoDBAccessTokensDatabaseOptions() *DynamoDBAccessTokensDatabaseO
 
 type DynamoDBAccessTokensDatabase struct {
 	database.AccessTokensDatabase
-	client                   *aws_dynamodb.DynamoDB
-	options                  *DynamoDBAccessTokensDatabaseOptions
+	client  *aws_dynamodb.DynamoDB
+	options *DynamoDBAccessTokensDatabaseOptions
 }
 
 func NewDynamoDBAccessTokensDatabaseWithDSN(dsn string, opts *DynamoDBAccessTokensDatabaseOptions) (database.AccessTokensDatabase, error) {

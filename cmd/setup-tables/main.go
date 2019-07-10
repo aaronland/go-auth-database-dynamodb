@@ -2,7 +2,7 @@ package main
 
 import (
 	"flag"
-	"github.com/aaronland/go-http-auth-database-dynamodb"
+	"github.com/aaronland/go-auth-database-dynamodb"
 	"log"
 )
 

@@ -36,8 +36,8 @@ func DefaultDynamoDBAccountsDatabaseOptions() *DynamoDBAccountsDatabaseOptions {
 
 type DynamoDBAccountsDatabase struct {
 	database.AccountsDatabase
-	client                   *aws_dynamodb.DynamoDB
-	options                  *DynamoDBAccountsDatabaseOptions
+	client  *aws_dynamodb.DynamoDB
+	options *DynamoDBAccountsDatabaseOptions
 }
 
 func NewDynamoDBAccountsDatabaseWithDSN(dsn string, opts *DynamoDBAccountsDatabaseOptions) (database.AccountsDatabase, error) {
@@ -73,7 +73,7 @@ func NewDynamoDBAccountsDatabaseWithSession(sess *aws_session.Session, opts *Dyn
 
 func (db *DynamoDBAccountsDatabase) GetAccountByID(id int64) (*account.Account, error) {
 
-     str_id := strconv.FormatInt(id, 10)
+	str_id := strconv.FormatInt(id, 10)
 
 	req := &aws_dynamodb.GetItemInput{
 		TableName: aws.String(db.options.TableName),
@@ -174,7 +174,7 @@ func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.
 
 func (db *DynamoDBAccountsDatabase) RemoveAccount(acct *account.Account) (*account.Account, error) {
 
-     str_id := strconv.FormatInt(acct.ID, 10)
+	str_id := strconv.FormatInt(acct.ID, 10)
 
 	req := &aws_dynamodb.DeleteItemInput{
 		TableName: aws.String(db.options.TableName),
@@ -196,8 +196,8 @@ func (db *DynamoDBAccountsDatabase) RemoveAccount(acct *account.Account) (*accou
 
 func (db *DynamoDBAccountsDatabase) UpdateAccount(acct *account.Account) (*account.Account, error) {
 
-     now := time.Now()
-     acct.LastModified = now.Unix()
+	now := time.Now()
+	acct.LastModified = now.Unix()
 
 	err := putAccount(db.client, db.options, acct)
 

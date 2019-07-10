@@ -10,7 +10,6 @@ import (
 	aws_session "github.com/aws/aws-sdk-go/aws/session"
 	aws_dynamodb "github.com/aws/aws-sdk-go/service/dynamodb"
 	aws_dynamodbattribute "github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
-	"log"
 	"strconv"
 	"time"
 )
@@ -128,8 +127,6 @@ func (db *DynamoDBAccountsDatabase) getAccountByPointer(idx string, key string, 
 		IndexName:            aws.String(idx),
 	}
 
-	// log.Println("GET", req)
-
 	rsp, err := db.client.Query(req)
 
 	if err != nil {
@@ -155,7 +152,6 @@ func (db *DynamoDBAccountsDatabase) getAccountByPointer(idx string, key string, 
 		return nil, err
 	}
 
-	log.Printf("GET BY ID FOR %s=%s (%d)\n", key, value, id)
 	return db.GetAccountByID(id)
 }
 

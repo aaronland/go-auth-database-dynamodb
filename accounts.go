@@ -161,13 +161,9 @@ func (db *DynamoDBAccountsDatabase) getAccountByPointer(idx string, key string, 
 
 func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.Account, error) {
 
-	log.Println("ADD")
-
 	existing_acct, err := db.GetAccountByEmailAddress(acct.Address.URI)
 
 	if err != nil && !database.IsNotExist(err) {
-
-		log.Println("ERR 1")
 		return nil, err
 	}
 
@@ -178,7 +174,6 @@ func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.
 	existing_acct, err = db.GetAccountByURL(acct.Username.Safe)
 
 	if err != nil && !database.IsNotExist(err) {
-		log.Println("ERR 1")
 		return nil, err
 	}
 
@@ -194,7 +189,6 @@ func (db *DynamoDBAccountsDatabase) AddAccount(acct *account.Account) (*account.
 
 	acct.ID = id
 
-	log.Println("PUT")
 	err = putAccount(db.client, db.options, acct)
 
 	if err != nil {
@@ -243,8 +237,6 @@ func (db *DynamoDBAccountsDatabase) UpdateAccount(acct *account.Account) (*accou
 func putAccount(client *aws_dynamodb.DynamoDB, opts *DynamoDBAccountsDatabaseOptions, acct *account.Account) error {
 
 	dynamodb_acct := accountToDynamoDBAccount(acct)
-
-	log.Println("PUT", dynamodb_acct.ID, dynamodb_acct.Created)
 
 	item, err := aws_dynamodbattribute.MarshalMap(dynamodb_acct)
 
